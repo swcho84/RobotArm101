@@ -1,0 +1,44 @@
+robotarm101:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 100
+
+  # Trajectory Controller
+  arm_controller:
+    type: effort_controllers/JointTrajectoryController
+    joints:
+      - rotation_base
+      - shoulder
+      - joint1
+      - joint2_rotation
+      - joint2
+      - camera_joint
+    gains: # Required because we're controlling an effort interface
+      rotation_base: {p: 100.0, i: 0.10, d: 0.01}
+      shoulder: {p: 100.0, i: 0.10, d: 0.01} 
+      joint1: {p: 100.0, i: 0.10, d: 0.01}
+      joint2_rotation: {p: 5.0, i: 0.10, d: 0.0001}
+      joint2: {p: 10.0, i: 0.10, d: 0.01}
+      camera_joint: {p: 1.0, i: 0.10, d: 0.0001}
+
+    constraints:
+      goal_time: 0.4
+      rotation_base:
+        goal: 0.4
+        trajectory: 0.4
+      shoulder:
+        goal: 0.4
+        trajectory: 0.4
+      joint1:
+        goal: 0.4
+        trajectory: 0.4
+      joint2_rotation:
+        goal: 0.4
+        trajectory: 0.4
+      joint2:
+        goal: 0.4
+        trajectory: 0.4
+      camera_joint:
+        goal: 0.4
+        trajectory: 0.4

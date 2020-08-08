@@ -1,0 +1,352 @@
+<?xml version="1.0"?>
+<!-- Revolute-Revolute Manipulator -->
+<robot name="robotarm101" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Constants for robot dimensions -->
+  <xacro:property name="PI" value="3.1415926535897931"/>
+  <xacro:property name="ground_height" value="0.0625" /> <!-- arbitrary value for ground_height -->
+  <xacro:property name="arm_base_mass" value="0.25" /> <!-- arbitrary value for arm_base_mass -->
+  <xacro:property name="arm_base_radius" value="0.08" /> <!-- arbitrary value for arm_base_radius -->
+  <xacro:property name="arm_base_height" value="0.025" /> <!-- arbitrary value for arm_base_height -->  
+  <xacro:property name="rotation_base_mass" value="0.25" /> <!-- arbitrary value for rotation_base_mass -->
+  <xacro:property name="rotation_base_radius" value="0.07" /> <!-- arbitrary value for rotation_base_radius -->
+  <xacro:property name="rotation_base_height" value="0.025" /> <!-- arbitrary value for rotation_base_height -->     
+  <xacro:property name="mass1" value="0.2" />     <!-- arbitrary value for mass1 -->
+  <xacro:property name="mass2" value="0.2" />     <!-- arbitrary value for mass2 -->
+  <xacro:property name="mass3" value="0.2" />     <!-- arbitrary value for mass3 -->
+  <xacro:property name="mass4" value="0.002" />     <!-- arbitrary value for mass4 -->
+  <xacro:property name="width" value="0.025" />    <!-- Square dimensions (widthxwidth) of beams -->
+  <xacro:property name="height1" value="0.4" />   <!-- Link 1 -->
+  <xacro:property name="height2" value="0.1" />   <!-- Link 2 -->
+  <xacro:property name="height3" value="0.2" />  <!-- Link 3 -->
+  <xacro:property name="end_effector" value="0.01" />  <!-- end_effector -->
+  <xacro:property name="camera_link" value="0.01" /> <!-- Size of square 'camera' box -->
+  <xacro:property name="axel_offset" value="0.025" /> <!-- Space btw top of beam and the each joint -->
+
+  <!-- Import all Gazebo-customization elements, including Gazebo colors -->
+  <xacro:include filename="$(find robotarm101_description)/urdf/robotarm101.gazebo" />
+
+  <!-- Import Rviz colors -->
+  <xacro:include filename="$(find robotarm101_description)/urdf/materials.xacro" />
+
+  <!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+
+  <!-- arm_base Link -->
+  <link name="arm_base">
+    <collision>
+      <origin xyz="0 0 ${ground_height}" rpy="0 0 0"/>
+      <geometry>
+	      <cylinder radius="${arm_base_radius}" length="${arm_base_height}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 ${ground_height}" rpy="0 0 0"/>
+      <geometry>
+	      <cylinder radius="${arm_base_radius}" length="${arm_base_height}"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 ${ground_height}" rpy="0 0 0"/>
+      <mass value="${arm_base_mass}"/>
+      <inertia
+        ixx="${(1.0/12.0)*(arm_base_mass)*(arm_base_height*arm_base_height) + (1.0/4.0)*(arm_base_mass)*(arm_base_radius*arm_base_radius)}" ixy="0.0" ixz="0.0"
+        iyx="0.0" iyy="${(1.0/12.0)*(arm_base_mass)*(arm_base_height*arm_base_height) + (1.0/4.0)*(arm_base_mass)*(arm_base_radius*arm_base_radius)}" iyz="0.0"
+        izx="0.0" izy="0.0" izz="${(1.0/2.0)*(arm_base_mass)*(arm_base_radius*arm_base_radius)}"/>
+    </inertial>
+  </link>
+
+  <!-- rotation_base Link -->
+  <link name="rotation_base">
+    <collision>
+      <origin xyz="0 0 ${ground_height + arm_base_height}" rpy="0 0 0"/>
+      <geometry>
+	      <cylinder radius="${rotation_base_radius}" length="${rotation_base_height}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 ${ground_height + arm_base_height}" rpy="0 0 0"/>
+      <geometry>
+	      <cylinder radius="${rotation_base_radius}" length="${rotation_base_height}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 ${ground_height + arm_base_height}" rpy="0 0 0"/>
+      <mass value="${rotation_base_mass}"/>
+      <inertia
+        ixx="${(1.0/12.0)*(rotation_base_mass)*(rotation_base_height*rotation_base_height) + (1.0/4.0)*(rotation_base_mass)*(rotation_base_radius*rotation_base_radius)}" ixy="0.0" ixz="0.0"
+        iyx="0.0" iyy="${(1.0/12.0)*(rotation_base_mass)*(rotation_base_height*rotation_base_height) + (1.0/4.0)*(rotation_base_mass)*(rotation_base_radius*rotation_base_radius)}" iyz="0.0"
+        izx="0.0" izy="0.0" izz="${(1.0/2.0)*(rotation_base_mass)*(rotation_base_radius*rotation_base_radius)}"/>
+    </inertial>
+  </link>
+
+  <!-- upper arm Link -->
+  <link name="link1">
+    <collision>
+      <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${width} ${width} ${height1}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${width} ${width} ${height1}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
+      <mass value="${mass1}"/>
+      <inertia
+        ixx="${mass1 / 12.0 * (width*width + height1*height1)}" ixy="0.0" ixz="0.0"
+        iyy="${mass1 / 12.0 * (height1*height1 + width*width)}" iyz="0.0"
+        izz="${mass1 / 12.0 * (width*width + width*width)}"/>
+    </inertial>
+  </link>
+
+  <!-- upper-middle arm Link -->
+  <link name="link2_upper">
+    <collision>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${width} ${width} ${height2}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${width} ${width} ${height2}"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <mass value="${mass2}"/>
+      <inertia
+        ixx="${mass2 / 12.0 * (width*width + height2*height2)}" ixy="0.0" ixz="0.0"
+        iyy="${mass2 / 12.0 * (height2*height2 + width*width)}" iyz="0.0"
+        izz="${mass2 / 12.0 * (width*width + width*width)}"/>
+    </inertial>
+  </link>
+
+  <!-- lower-middle arm Link -->
+  <link name="link2_lower">
+    <collision>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${width} ${width} ${height2}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${width} ${width} ${height2}"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
+      <mass value="${mass2}"/>
+      <inertia
+        ixx="${mass2 / 12.0 * (width*width + height2*height2)}" ixy="0.0" ixz="0.0"
+        iyy="${mass2 / 12.0 * (height2*height2 + width*width)}" iyz="0.0"
+        izz="${mass2 / 12.0 * (width*width + width*width)}"/>
+    </inertial>
+  </link>  
+
+  <!-- lower arm -->
+  <link name="link3">
+    <collision>
+      <origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${width} ${width} ${height3}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${width} ${width} ${height3}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/>
+      <mass value="${mass3}"/>
+      <inertia
+        ixx="${mass3 / 12.0 * (width*width + height3*height3)}" ixy="0.0" ixz="0.0"
+        iyy="${mass3 / 12.0 * (height3*height3 + width*width)}" iyz="0.0"
+        izz="${mass3 / 12.0 * (width*width + width*width)}"/>
+    </inertial>
+  </link>
+
+  <!-- Camera link, physical movement -->
+  <link name="camera_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+    	  <box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+    </visual>
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+  <!-- Camera link, optical movement -->
+  <link name="camera_link_optical">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </link>    
+
+  <!-- joint between world and arm_base, fixed -->
+  <joint name="arm_base" type="fixed">
+    <parent link="world"/>
+    <child link="arm_base"/>
+  </joint>
+
+  <!-- joint between arm_base and rotation_base for the yawing motion --> 
+  <joint name="rotation_base" type="revolute">
+    <parent link="arm_base"/>
+    <child link="rotation_base"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="0.7"/>
+    <limit effort="100000.0" lower="-${PI/2}" upper="${PI/2}" velocity="0.5" />    
+  </joint>  
+
+  <!-- joint between rotation_base and shoulder for the shoulder motion -->
+  <joint name="shoulder" type="revolute">
+    <parent link="rotation_base"/>
+    <child link="link1"/>
+    <origin xyz="0 0 ${ground_height + arm_base_height + axel_offset/2}" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/> 
+    <dynamics damping="0.7"/>  
+    <limit effort="100000.0" lower="-${PI/2}" upper="${PI/2}" velocity="0.5" />  
+  </joint>    
+
+  <!-- joint between shoulder and elbow for the elbow motion -->
+  <joint name="joint1" type="revolute">
+    <parent link="link1"/>
+    <child link="link2_upper"/>
+    <origin xyz="0 ${width} ${height1 - axel_offset*2}" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.7"/>
+    <limit effort="5000.0" lower="-${PI/2}" upper="${PI/2}" velocity="0.5" /> 
+  </joint>
+
+  <!-- joint between upper and lower elbow for the rotation -->
+  <joint name="joint2_rotation" type="continuous">
+    <parent link="link2_upper"/>
+    <child link="link2_lower"/>
+    <origin xyz="0 0 ${height2}" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>  
+
+  <!-- joint between lower elbow and wrist for the wrist motion -->
+  <joint name="joint2" type="revolute">
+    <parent link="link2_lower"/>
+    <child link="link3"/>
+    <origin xyz="0 -${width} ${height2 - axel_offset*2}" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.7"/>
+    <limit effort="5000.0" lower="-${PI/2}" upper="${PI/2}" velocity="0.5" />
+  </joint>
+
+  <!-- joint camera -->
+  <joint name="camera_joint" type="continuous">
+    <axis xyz="1 0 0" />
+    <origin xyz="0 0 ${height3 - camera_link - axel_offset/2}" rpy="0 -${PI/2} 0"/>
+    <parent link="link3"/>
+    <child link="camera_link"/>
+  </joint>
+
+  <!-- generate an optical frame http://www.ros.org/reps/rep-0103.html#suffix-frames
+      so that ros and opencv can operate on the camera frame correctly -->
+  <joint name="camera_optical_joint" type="fixed">
+    <origin xyz="0 0 1" rpy="0 0 0"/>
+    <parent link="camera_link"/>
+    <child link="camera_link_optical"/>
+  </joint>
+
+  <!-- transmission, for the yawing motion -->
+  <transmission name="tran_base">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="rotation_base">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_base">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- transmission, for the shoulder motion -->
+  <transmission name="tran_shoulder">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="shoulder">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_shoulder">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>    
+
+  <!-- transmission, for the elbow motion -->
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- transmission, for the rotation -->
+  <transmission name="tran2_rotation">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint2_rotation">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2_rotation">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>  
+
+  <!-- transmission, for the wrist motion -->
+  <transmission name="tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint2">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- transmission, for the end-effector motion -->
+  <transmission name="tran3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="camera_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor3">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+</robot>
